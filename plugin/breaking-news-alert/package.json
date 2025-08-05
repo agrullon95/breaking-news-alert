@@ -1,5 +1,5 @@
 {
-  "name": "breaking-news-alert-block",
+  "name": "breaking-news-alert",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "description": "",
-  "dependencies": {
+  "devDependencies": {
     "@wordpress/scripts": "^30.20.0"
   }
 }

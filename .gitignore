@@ -1,6 +1,20 @@
+# Node modules
 node_modules/
+
+# WordPress build outputs
+build/
+*.asset.php
+
+# Logs and system files
+npm-debug.log
+.DS_Store
+.env
+
+# Docker artifacts (if needed)
+*.pid
+*.sock
+
+# Extra
 db_data/
 *.log
 *.zip
-.DS_Store
-wp-content/plugins/breaking-news-alert/block/build/

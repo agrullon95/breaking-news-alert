@@ -1,0 +1,17 @@
+{
+  "apiVersion": 2,
+  "name": "bna/alert",
+  "title": "Breaking News Alert",
+  "category": "widgets",
+  "icon": "megaphone",
+  "description": "Displays a breaking news alert banner.",
+  "editorScript": "file:./build/index.js",
+  "style": "file:./build/style.css",
+  "attributes": {
+    "message": {
+      "type": "string",
+      "source": "html",
+      "selector": "div"
+    }
+  }
+}

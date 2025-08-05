@@ -9,6 +9,6 @@
 defined( 'ABSPATH' ) || exit;
 
 function bna_register_block() {
-    // We'll register the block here later.
+    register_block_type( __DIR__ );
 }
 add_action( 'init', 'bna_register_block' );
