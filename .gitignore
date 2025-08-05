@@ -1,0 +1,6 @@
+node_modules/
+db_data/
+*.log
+*.zip
+.DS_Store
+wp-content/plugins/breaking-news-alert/block/build/
