@@ -1,6 +1,52 @@
 .wp-block-bna-alert {
+  position: relative;
   background: #ffef00;
   font-weight: bold;
   padding: 1em;
   border: 1px solid #999;
+}
+
+.wp-block-bna-alert .alert-close {
+	position: absolute;
+	top: 0.5em;
+	right: 0.5em;
+	background: none;
+	border: none;
+	font-size: 0.75rem;
+	cursor: pointer;
+	color: inherit;
+}
+
+.wp-block-bna-alert .alert-close:hover {
+	color: red;
+}
+
+/* Alert */
+
+.alert {
+  padding: 1rem 1.25rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+  font-family: sans-serif;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: #222;
+  background-color: #f0f0f0;
+  border-left: 4px solid #ccc;
+  transition: background-color 0.3s ease;
+}
+
+.alert-info {
+  background-color: #e7f3fe;
+  border-left-color: #2196f3;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  border-left-color: #ff9800;
+}
+
+.alert-error {
+  background-color: #f8d7da;
+  border-left-color: #f44336;
 }
