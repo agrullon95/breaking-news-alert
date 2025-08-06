@@ -1,6 +1,8 @@
 services:
   wordpress:
-    image: wordpress:latest
+    build:
+      context: ./docker
+    # image: wordpress:latest
     ports:
       - "8000:80"
     environment:
@@ -8,8 +10,13 @@ services:
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DB_USER: wordpress
       WORDPRESS_DB_PASSWORD: wordpress
+      BNA_AWS_REGION: ${BNA_AWS_REGION}
+      BNA_AWS_ACCESS_KEY_ID: ${BNA_AWS_ACCESS_KEY_ID}
+      BNA_AWS_SECRET_ACCESS_KEY: ${BNA_AWS_SECRET_ACCESS_KEY}
+      BNA_AWS_SQS_QUEUE_URL: ${BNA_AWS_SQS_QUEUE_URL}
     volumes:
       - ./plugin:/var/www/html/wp-content/plugins
+      - ./wp-config.php:/var/www/html/wp-config.php
     depends_on:
       - db
 

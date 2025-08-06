@@ -1,0 +1,10 @@
+{
+  "require": {
+    "aws/aws-sdk-php": "^3.352"
+  },
+  "autoload": {
+    "psr-4": {
+      "BNA\\": "includes/"
+    }
+  }
+}

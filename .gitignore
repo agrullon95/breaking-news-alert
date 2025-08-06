@@ -1,5 +1,6 @@
 # Node modules
 node_modules/
+*.log
 
 # WordPress build outputs
 build/
@@ -9,6 +10,8 @@ build/
 npm-debug.log
 .DS_Store
 .env
+.env.local
+.env.*.local
 
 # Docker artifacts (if needed)
 *.pid
@@ -18,3 +21,13 @@ npm-debug.log
 db_data/
 *.log
 *.zip
+
+# Composer
+vendor/
+
+# OS & Editor files
+*.swp
+
+# WordPress
+wp-config.php
+wp-content/debug.log
