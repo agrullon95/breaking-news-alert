@@ -1,13 +1,29 @@
-import { useBlockProps, RichText } from "@wordpress/block-editor";
+import { useBlockProps, RichText } from '@wordpress/block-editor';
+import { __ } from '@wordpress/i18n';
+import { getAlertClasses } from './utils/classNames';
 
 export default function Save({ attributes }) {
-  const blockProps = useBlockProps.save();
+	const { message, alertType, isDismissible } = attributes;
+	const blockProps = useBlockProps.save({
+		className: getAlertClasses(alertType, isDismissible),
+	});
 
-  return (
-    <RichText.Content
-      {...blockProps}
-      tagName="div"
-      value={attributes.message}
-    />
-  );
+	return (
+		<div {...blockProps}>
+			<RichText.Content
+				tagName="div"
+				className="alert-message"
+				value={message}
+			/>
+			{isDismissible && (
+				<button
+					className="alert-close"
+					type="button"
+					aria-label={__('Dismiss alert', 'bna')}
+				>
+					close button
+				</button>
+			)}
+		</div>
+	);
 }
