@@ -22,7 +22,8 @@ function bna_render_admin_page() {
     ?>
     <div class="wrap">
         <h1>Breaking News Alerts</h1>
-         <?php settings_errors( 'bna_messages' ); ?>
+        <p>Use this form to send a breaking news alert to your website visitors.</p>
+        <?php settings_errors( 'bna_messages' ); ?>
         <form method="post" action="">
             <?php wp_nonce_field( 'bna_send_alert', 'bna_nonce' ); ?>
             <table class="form-table" role="presentation">
@@ -30,6 +31,27 @@ function bna_render_admin_page() {
                     <tr>
                         <th scope="row"><label for="alert_message">Alert Message</label></th>
                         <td><input name="alert_message" type="text" id="alert_message" class="regular-text" required></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="alert_type">Alert Type</label></th>
+                        <td>
+                            <select id="alert_type" name="alert_type">
+                                <option value="info">Information</option>
+                                <option value="warning">Warning</option>
+                                <option value="error">Error</option>
+                            </select>
+                        </td>
+                    </tr>
+                     <tr>
+                        <th scope="row"><label for="alert_expiration">Expiration time</label></th>
+                        <td>
+                            <select id="alert_expiration" name="alert_expiration">
+                                <option value="0">No expiration</option>
+                                <option value="21600">6 hours</option>
+                                <option value="43200">12 hours</option>
+                                <option value="86400">24 hours</option>
+                            </select>
+                        </td>
                     </tr>
                 </tbody>
             </table>
