@@ -1,52 +1,82 @@
 .wp-block-bna-alert {
   position: relative;
-  background: #ffef00;
-  font-weight: bold;
-  padding: 1em;
-  border: 1px solid #999;
-}
-
-.wp-block-bna-alert .alert-close {
-	position: absolute;
-	top: 0.5em;
-	right: 0.5em;
-	background: none;
-	border: none;
-	font-size: 0.75rem;
-	cursor: pointer;
-	color: inherit;
-}
-
-.wp-block-bna-alert .alert-close:hover {
-	color: red;
-}
-
-/* Alert */
-
-.alert {
-  padding: 1rem 1.25rem;
-  border-radius: 4px;
+  padding: 1em 1.25em;
   margin: 1rem 0;
   font-family: sans-serif;
   font-size: 1rem;
   line-height: 1.4;
-  color: #222;
-  background-color: #f0f0f0;
-  border-left: 4px solid #ccc;
-  transition: background-color 0.3s ease;
+  border-radius: 4px;
+  border-left: 4px solid transparent;
+  transition: opacity 200ms ease, transform 220ms ease, background-color 0.3s ease;
+  transform: translateY(-6px);
+  opacity: 0;
+  will-change: opacity, transform;
 }
 
-.alert-info {
+/* Fade-in after load */
+.wp-block-bna-alert.is-mounted {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Fade-out on dismiss */
+.wp-block-bna-alert.is-exiting {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .wp-block-bna-alert {
+    transition: none;
+    transform: none;
+  }
+  .wp-block-bna-alert.is-exiting {
+    opacity: 0;
+  }
+}
+
+/* Alert variants */
+.wp-block-bna-alert.alert-info {
   background-color: #e7f3fe;
   border-left-color: #2196f3;
+  color: #1a1a1a;
 }
 
-.alert-warning {
+.wp-block-bna-alert.alert-warning {
   background-color: #fff3cd;
   border-left-color: #ff9800;
+  color: #1a1a1a;
 }
 
-.alert-error {
+.wp-block-bna-alert.alert-error {
   background-color: #f8d7da;
   border-left-color: #f44336;
+  color: #1a1a1a;
+}
+
+/* Message text */
+.wp-block-bna-alert .alert-body {
+  margin: 0;
+}
+
+/* Dismiss button */
+.wp-block-bna-alert .alert-dismiss {
+  position: absolute;
+  top: 0.4em;
+  right: 0.2em;
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: inherit;
+}
+
+.wp-block-bna-alert .alert-dismiss:hover {
+  color: #900;
+}
+
+.wp-block-bna-alert .alert-dismiss svg {
+  vertical-align: middle;
+  pointer-events: none;
 }
