@@ -5,14 +5,10 @@
   "category": "widgets",
   "icon": "megaphone",
   "description": "Displays a breaking news alert banner.",
-  "editorScript": "file:./build/index.js",
-  "style": "file:./build/style-index.css",
+  "editorScript": "file:./build/editor/index.js",
+  "style": "file:./build/editor/style-index.css",
+  "viewScript": "file:./build/frontend/frontend.js",
   "attributes": {
-    "message": {
-      "type": "string",
-      "source": "html",
-      "selector": "div.alert-message"
-    },
     "alertType": {
       "type": "string",
       "default": "info"
@@ -20,6 +16,9 @@
     "isDismissible": {
       "type": "boolean",
       "default": false
+    },
+    "uniqueId": {
+      "type": "string"
     }
   },
   "supports": {
