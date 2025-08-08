@@ -25,13 +25,49 @@ class AlertQueueClient {
         try {
             $result = $this->client->sendMessage([
                 'QueueUrl' => $this->queueUrl,
-                'MessageBody' => json_encode($messageBody),
+                'MessageBody' => $messageBody,
             ]);
             error_log('SQS Message sent. MessageId: ' . $result->get('MessageId'));
             return true;
         } catch (AwsException $e) {
             error_log('SQS sendMessage error: ' . $e->getMessage());
             return false;
+        }
+    }
+
+    public function getDecodedMessages($maxNumber = 1) {
+        try {
+            error_log('MaxNumberOfMessages: ' . $maxNumber);
+            $rawMessages = $this->receiveMessages($maxNumber);
+            $decodedMessages = [];
+
+            foreach ($rawMessages as $msg) {
+                $body = $msg['Body'];
+                $data = json_decode($body, true);
+
+                if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
+                    $decodedMessages[] = [
+                        'id' => $msg['MessageId'] ?? '',
+                        'receiptHandle' => $msg['ReceiptHandle'] ?? null,
+                        'message' => $data['message'] ?? null,
+                        'time' => $data['time'] ?? null,
+                    ];
+                } else {
+                    error_log('Invalid JSON in SQS message: ' . $body);
+                }
+            }
+
+            return $decodedMessages;
+        } catch (\Exception $e) {
+            error_log('Error receiving or decoding SQS messages: ' . $e->getMessage());
+            return [
+                [
+                    'id' => null,
+                    'receiptHandle' => null,
+                    'message' => 'Error retrieving messages',
+                    'time' => null,
+                ]
+            ];
         }
     }
     
