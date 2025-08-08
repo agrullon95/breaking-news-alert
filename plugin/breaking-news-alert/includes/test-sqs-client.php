@@ -2,6 +2,12 @@
 
 namespace BNA;
 
+// ADD THIS TO breaking-news-alert.php bna_register_block()
+//
+// if (defined('WP_DEBUG') && WP_DEBUG) {
+//     bna_test_sqs_client($sqsClient);
+// }
+
 function bna_test_sqs_client($sqsClient) {
     // Send a test message
     $messageBody = json_encode(['test' => 'Hello from test!']);

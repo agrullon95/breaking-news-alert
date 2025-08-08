@@ -31,9 +31,6 @@ bna_register_rest_routes($sqsClient);
 register_hooks($sqsClient);
 
 function bna_register_block() {
-    // if (defined('WP_DEBUG') && WP_DEBUG) {
-    //     bna_test_sqs_client($sqsClient);
-    // }
     register_block_type( __DIR__ );
 }
 add_action( 'init', 'bna_register_block' );
