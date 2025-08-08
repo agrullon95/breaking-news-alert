@@ -21,6 +21,7 @@ npm-debug.log
 db_data/
 *.log
 *.zip
+plugin/wp-debugging
 
 # Composer
 vendor/
