@@ -21,24 +21,77 @@ class AlertQueueClient {
         $this->queueUrl = $queueUrl;
     }
 
-    public function sendMessage($messageBody) {
+    public function sendMessage(string $messageBody, array $options = []): bool
+    {
+        // Options with sensible defaults
+        $type       = $options['type']       ?? 'info';   // info | warning | error | success
+        $priority   = $options['priority']   ?? 5;        // numeric priority
+        $ttlSeconds = $options['ttlSeconds'] ?? null;     // e.g., 6*60*60 for 6 hours
+        $expiresAtMs = $options['expiresAtMs'] ?? null;   // absolute epoch ms
+        $extraAttrs = $options['attributes'] ?? [];       // additional MessageAttributes
+        $groupId    = $options['groupId']    ?? null;     // for FIFO queues
+        $dedupId    = $options['dedupId']    ?? null;     // for FIFO queues
+
+        // Compute expiry if TTL given
+        if (!$expiresAtMs && $ttlSeconds) {
+            $expiresAtMs = (int) round(microtime(true) * 1000) + ((int) $ttlSeconds * 1000);
+        }
+
+        // Base attributes
+        $messageAttributes = [
+            'type' => [
+                'DataType'    => 'String',
+                'StringValue' => (string) $type,
+            ],
+            'priority' => [
+                'DataType'    => 'Number',     // for numeric semantics
+                'StringValue' => (string) $priority,
+            ],
+        ];
+
+        if ($expiresAtMs) {
+            $messageAttributes['expiresAt'] = [
+                'DataType'    => 'Number',
+                'StringValue' => (string) $expiresAtMs,
+            ];
+        }
+
+        // Merge any extra attributes (caller-provided) — these can override defaults if keys collide
+        foreach ($extraAttrs as $key => $attr) {
+            // Expecting shape: ['DataType' => 'String'|'Number'|'Binary', 'StringValue' => '...', (or 'BinaryValue')]
+            if (is_array($attr) && isset($attr['DataType']) && (isset($attr['StringValue']) || isset($attr['BinaryValue']))) {
+                $messageAttributes[$key] = $attr;
+            }
+        }
+
+        // Build params
+        $params = [
+            'QueueUrl'          => $this->queueUrl,
+            'MessageBody'       => $messageBody,
+            'MessageAttributes' => $messageAttributes,
+        ];
+
+        // FIFO support if the queue is FIFO or caller provided group/dedup
+        $isFifo = str_ends_with((string) $this->queueUrl, '.fifo');
+        if ($isFifo) {
+            $params['MessageGroupId'] = $groupId ?: 'alerts';
+            // Create a reasonable default dedup ID if not provided
+            $params['MessageDeduplicationId'] = $dedupId ?: hash('sha256', $messageBody . json_encode($messageAttributes));
+        }
+
         try {
-            $result = $this->client->sendMessage([
-                'QueueUrl' => $this->queueUrl,
-                'MessageBody' => $messageBody,
-            ]);
+            $result = $this->client->sendMessage($params);
             error_log('SQS Message sent. MessageId: ' . $result->get('MessageId'));
             return true;
         } catch (AwsException $e) {
-            error_log('SQS sendMessage error: ' . $e->getMessage());
+            error_log('SQS sendMessage error: ' . $e->getAwsErrorMessage());
             return false;
         }
     }
 
     public function getDecodedMessages($maxNumber = 1) {
         try {
-            error_log('MaxNumberOfMessages: ' . $maxNumber);
-            $rawMessages = $this->receiveMessages($maxNumber);
+            $rawMessages = $this->receiveMessages(1);
             $decodedMessages = [];
 
             foreach ($rawMessages as $msg) {
