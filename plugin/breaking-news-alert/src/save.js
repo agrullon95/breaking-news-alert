@@ -1,27 +1,39 @@
-import { useBlockProps, RichText } from '@wordpress/block-editor';
-import { __ } from '@wordpress/i18n';
+import { useBlockProps } from '@wordpress/block-editor';
 import { getAlertClasses } from './utils/classNames';
 
 export default function Save({ attributes }) {
-	const { message, alertType, isDismissible } = attributes;
+	const { alertType, isDismissible, uniqueId } = attributes;
 	const blockProps = useBlockProps.save({
-		className: getAlertClasses(alertType, isDismissible),
+		className: getAlertClasses(alertType, isDismissible, true),
+		id: `alert-${uniqueId}`,
+		'data-alert-id': uniqueId,
 	});
 
 	return (
 		<div {...blockProps}>
-			<RichText.Content
-				tagName="div"
-				className="alert-message"
-				value={message}
-			/>
+			<div className="alert-body">
+				<p className="alert-message"></p>
+			</div>
 			{isDismissible && (
 				<button
-					className="alert-close"
+					className="alert-dismiss"
 					type="button"
-					aria-label={__('Dismiss alert', 'bna')}
+					aria-label="Dismiss alert"
 				>
-					close button
+					<svg
+						width="16"
+						height="16"
+						viewBox="0 0 16 16"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M4 4L12 12M12 4L4 12"
+							stroke="currentColor"
+							strokeWidth="2"
+							strokeLinecap="round"
+						/>
+					</svg>
 				</button>
 			)}
 		</div>
