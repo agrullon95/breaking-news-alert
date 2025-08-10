@@ -5,13 +5,27 @@
   "category": "widgets",
   "icon": "megaphone",
   "description": "Displays a breaking news alert banner.",
-  "editorScript": "file:./build/editor/index.js",
-  "style": "file:./build/editor/style-index.css",
-  "viewScript": "file:./build/frontend/frontend.js",
+  "style": "bna-alerts-style",
+  "editorStyle": "bna-alerts-style",
+  "viewScript": "bna-alerts-frontend-script",
+  "editorScript": "bna-alerts-editor-script",
+  "render": "bna_render_alerts_block",
   "attributes": {
-    "alertType": {
+    "type": {
       "type": "string",
       "default": "info"
+    },
+    "message": {
+      "type": "string"
+    },
+    "time": {
+      "type": "string"
+    },
+    "priority": {
+      "type": "number"
+    },
+    "title": {
+      "type": "string"
     },
     "isDismissible": {
       "type": "boolean",
@@ -19,6 +33,10 @@
     },
     "uniqueId": {
       "type": "string"
+    },
+    "displayGlobally": {
+      "type": "boolean",
+      "default": false
     }
   },
   "supports": {
@@ -26,6 +44,7 @@
       "background": true,
       "text": true,
       "enableContrastChecker": true
-    }
+    },
+    "multiple": false
   }
 }
