@@ -39,33 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
 			return;
 		}
 
-		// Fetch and render alert
-		fetch('/wp-json/bna/v1/alerts')
-			.then((res) => res.json())
-			.then((alerts) => {
-				const alert = alerts.find((a) => a.id === alertId);
-				if (alert) {
-					const bodyEl = el.querySelector('.alert-body');
-					if (bodyEl) {
-						bodyEl.textContent = alert.body;
-					}
-					el.classList.add(`alert-${alert.type || 'info'}`);
-				}
-			})
-			.catch(() => {
-				const bodyEl = el.querySelector('.alert-body');
-				if (bodyEl) {
-					bodyEl.textContent = 'Unable to load alert.';
-				}
-				el.classList.add('alert-error');
-			})
-			.finally(() => {
-				// Fade/slide in after layout is ready
-				window.requestAnimationFrame(() =>
-					el.classList.add('is-mounted')
-				);
-			});
-
 		// Bind dismiss button inside this alert
 		const btn = el.querySelector('.alert-dismiss');
 		if (btn) {
@@ -74,4 +47,17 @@ document.addEventListener('DOMContentLoaded', () => {
 			);
 		}
 	});
+
+	const slides = document.querySelectorAll('.bna-alert-slide');
+	let current = 0;
+
+	function rotateAlerts() {
+		slides.forEach((slide, i) => {
+			slide.style.display = i === current ? 'block' : 'none';
+		});
+		current = (current + 1) % slides.length;
+	}
+
+	setInterval(rotateAlerts, 5000); // every 5 sec
+	rotateAlerts(); // init
 });
