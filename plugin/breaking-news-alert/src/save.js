@@ -2,9 +2,9 @@ import { useBlockProps } from '@wordpress/block-editor';
 import { getAlertClasses } from './utils/classNames';
 
 export default function Save({ attributes }) {
-	const { alertType, isDismissible, uniqueId } = attributes;
+	const { type, isDismissible, uniqueId } = attributes;
 	const blockProps = useBlockProps.save({
-		className: getAlertClasses(alertType, isDismissible, true),
+		className: getAlertClasses(type, isDismissible, true),
 		id: `alert-${uniqueId}`,
 		'data-alert-id': uniqueId,
 	});
