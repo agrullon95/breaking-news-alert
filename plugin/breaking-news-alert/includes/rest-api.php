@@ -11,6 +11,8 @@ function bna_register_rest_routes(AlertQueueClient $sqsClient) {
             'callback' => function() use ($sqsClient) {
                 $messages = $sqsClient->getDecodedMessages(1);
 
+                error_log(print_r($messages, true));
+
                 $alerts = [];
                 foreach ($messages as $msg) {
                     $alerts[] = [
@@ -20,7 +22,7 @@ function bna_register_rest_routes(AlertQueueClient $sqsClient) {
                         'receiptHandle'  => $msg['receiptHandle'] ?? '',
                         
                         // 👇 Block-specific metadata
-                        'alertType'      => $msg['type'] ?? 'info',
+                        'type'           => $msg['type'] ?? 'info',
                         'isDismissible'  => $msg['dismissible'] ?? true,
                     ];
                 }
