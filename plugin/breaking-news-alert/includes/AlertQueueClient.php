@@ -91,38 +91,72 @@ class AlertQueueClient {
 
     public function getDecodedMessages($maxNumber = 1) {
         try {
-            $rawMessages = $this->receiveMessages(1);
-            $decodedMessages = [];
+            $rawMessages = $this->receiveMessages($maxNumber);
+
+            $decoded = [];
 
             foreach ($rawMessages as $msg) {
-                $body = $msg['Body'];
-                $data = json_decode($body, true);
+                $body = $msg['Body'] ?? '';
+                $payload = $this->tryJson($body);
 
-                if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
-                    $decodedMessages[] = [
-                        'id' => $msg['MessageId'] ?? '',
-                        'receiptHandle' => $msg['ReceiptHandle'] ?? null,
-                        'message' => $data['message'] ?? null,
-                        'time' => $data['time'] ?? null,
-                    ];
-                } else {
-                    error_log('Invalid JSON in SQS message: ' . $body);
+                $sns = null;
+
+                // Handle SNS → SQS envelope
+                if (is_array($payload) && isset($payload['Type']) && isset($payload['Message'])) {
+                    $sns = $payload;
+                    $inner = $this->tryJson($sns['Message']);
+                    $payload = is_array($inner) ? $inner : ['message' => $sns['Message']];
                 }
+
+                $messageAttrs = $this->flattenMessageAttributes($msg['MessageAttributes'] ?? []);
+
+                // Extract metadata
+                $id = $msg['MessageId'] ?? '';
+                $receiptHandle = $msg['ReceiptHandle'] ?? null;
+                $sentTs = isset($msg['Attributes']['SentTimestamp']) ? (int) $msg['Attributes']['SentTimestamp'] : null;
+
+                // Time resolution
+                $time =
+                    ($payload['time'] ?? null) ?:
+                    ($payload['timestamp'] ?? null) ?:
+                    ($sns['Timestamp'] ?? null) ?:
+                    ($sentTs ? date(DATE_ATOM, (int)($sentTs / 1000)) : null);
+
+                // Type resolution
+                $type = $payload['type'] ?? ($messageAttrs['type'] ?? null);
+
+                // Merge everything
+                $merged = array_merge(
+                    $messageAttrs,
+                    is_array($payload) ? $payload : [],
+                    [
+                        'id' => $id,
+                        'receiptHandle' => $receiptHandle,
+                        'time' => $time,
+                        'type' => $type,
+                    ]
+                );
+
+                if (!isset($merged['message'])) {
+                    $merged['message'] = is_string($body) ? $body : json_encode($body);
+                }
+
+                $decoded[] = $merged;
             }
 
-            return $decodedMessages;
-        } catch (\Exception $e) {
+            return $decoded;
+        } catch (\Throwable $e) {
             error_log('Error receiving or decoding SQS messages: ' . $e->getMessage());
-            return [
-                [
-                    'id' => null,
-                    'receiptHandle' => null,
-                    'message' => 'Error retrieving messages',
-                    'time' => null,
-                ]
-            ];
+            return [[
+                'id' => null,
+                'receiptHandle' => null,
+                'message' => 'Error retrieving messages',
+                'time' => null,
+                'type' => 'error',
+            ]];
         }
     }
+
     
     public function receiveMessages($maxNumber = 1) {
         try {
@@ -155,4 +189,23 @@ class AlertQueueClient {
             return false;
         }
     }
+
+    private function tryJson($value): ?array {
+        if (!is_string($value) || $value === '') return null;
+        $data = json_decode($value, true);
+        return (json_last_error() === JSON_ERROR_NONE && is_array($data)) ? $data : null;
+    }
+
+    private function flattenMessageAttributes(array $attrs): array {
+        $out = [];
+        foreach ($attrs as $key => $attr) {
+            if (isset($attr['StringValue'])) {
+                $out[$key] = $attr['StringValue'];
+            } elseif (isset($attr['BinaryValue'])) {
+                $out[$key] = $attr['BinaryValue'];
+            }
+        }
+        return $out;
+    }
+
 }
