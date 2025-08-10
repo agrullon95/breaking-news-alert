@@ -1,54 +1,17 @@
 import { __ } from '@wordpress/i18n';
-import { PanelBody, Spinner, ToggleControl } from '@wordpress/components';
+import { PanelBody, ToggleControl } from '@wordpress/components';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import { getAlertClasses } from './utils/classNames';
-import { useState, useEffect, useRef } from '@wordpress/element';
-import apiFetch from '@wordpress/api-fetch';
+import { useEffect } from '@wordpress/element';
 
 export default function Edit({ attributes, setAttributes, clientId }) {
-	const { alertType, isDismissible, uniqueId } = attributes;
+	const { type, isDismissible, uniqueId, displayGlobally } = attributes;
 
 	const blockProps = useBlockProps({
-		className: getAlertClasses(alertType, isDismissible, true),
+		className: getAlertClasses(type, isDismissible, true),
 		id: `alert-${uniqueId}`,
 		'data-alert-id': uniqueId,
 	});
-
-	const [showPreview, setShowPreview] = useState(false);
-	const [loading, setLoading] = useState(true);
-	const [alerts, setAlerts] = useState([]);
-	const [currentAlert, setCurrentAlert] = useState(alerts[0]);
-
-	const hasRun = useRef(false);
-	const lastFetchTime = useRef(0);
-
-	const RATE_LIMIT_MS = 10000; // 10 seconds
-
-	useEffect(() => {
-		const now = Date.now();
-
-		if (
-			showPreview &&
-			!hasRun.current &&
-			now - lastFetchTime.current > RATE_LIMIT_MS
-		) {
-			hasRun.current = true;
-			lastFetchTime.current = now;
-
-			apiFetch({ path: '/bna/v1/alerts' })
-				.then((data) => {
-					setAlerts(data);
-					setCurrentAlert(data[0]);
-				})
-				.catch(() => {
-					setAlerts([]);
-					setCurrentAlert(null);
-				})
-				.finally(() => {
-					setLoading(false);
-				});
-		}
-	}, [showPreview]);
 
 	useEffect(() => {
 		if (!uniqueId) {
@@ -62,6 +25,14 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 				<PanelBody title={__('Alert settings', 'bna')}>
 					<ToggleControl
 						__nextHasNoMarginBottom
+						label={__('Display as Global Banner', 'bna')}
+						checked={displayGlobally}
+						onChange={(newDisplayValue) =>
+							setAttributes({ displayGlobally: newDisplayValue })
+						}
+					/>
+					<ToggleControl
+						__nextHasNoMarginBottom
 						label={__('Dismissible', 'bna')}
 						checked={isDismissible}
 						onChange={(newIsDismissibleValue) =>
@@ -69,14 +40,15 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 								isDismissible: newIsDismissibleValue,
 							})
 						}
-					/>
-					<ToggleControl
-						__nextHasNoMarginBottom
-						label={__('Show preview', 'bna')}
-						checked={showPreview}
-						onChange={() => {
-							setShowPreview(!showPreview);
-						}}
+						disabled={displayGlobally}
+						help={
+							displayGlobally
+								? __(
+										'Dismiss is disabled when global banner is active.',
+										'bna'
+									)
+								: __('Enable close button on alert.', 'bna')
+						}
 					/>
 				</PanelBody>
 			</InspectorControls>
@@ -84,21 +56,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 			<div className="alert-block" data-alert-id={uniqueId}>
 				<div className="alert-body">
 					<p className="alert-message">
-						{(() => {
-							if (!showPreview) {
-								return __(
-									'Alert message will be shown here',
-									'bna'
-								);
-							}
-							if (loading) {
-								return <Spinner />;
-							}
-							if (alerts.length > 0 && currentAlert) {
-								return currentAlert.message;
-							}
-							return __('No alerts available.', 'bna');
-						})()}
+						{__('Alert message will be shown here', 'bna')}
 					</p>
 				</div>
 				{isDismissible && (
