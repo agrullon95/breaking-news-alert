@@ -12,6 +12,8 @@ require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/includes/hooks.php';
 require_once __DIR__ . '/includes/admin-page.php';
 require_once __DIR__ . '/includes/rest-api.php';
+require_once __DIR__ . '/includes/render-alerts.php';
+require_once __DIR__ . '/includes/global-handler.php';
 
 use BNA\AlertQueueClient;
 use function BNA\register_hooks;
@@ -30,7 +32,41 @@ bna_register_rest_routes($sqsClient);
 
 register_hooks($sqsClient);
 
+function bna_register_block_assets() {
+    wp_register_style(
+        'bna-alerts-style',
+        plugins_url( 'build/editor/style-index.css', __FILE__ ),
+        [],
+        filemtime( plugin_dir_path( __FILE__ ) . 'build/editor/style-index.css' )
+    );
+
+    wp_register_script(
+        'bna-alerts-frontend-script',
+        plugins_url( 'build/frontend/frontend.js', __FILE__ ),
+        [],
+        filemtime( plugin_dir_path( __FILE__ ) . 'build/frontend/frontend.js' ),
+        true
+    );
+
+    wp_register_script(
+        'bna-alerts-editor-script',
+        plugins_url( 'build/editor/index.js', __FILE__ ),
+        [ 
+            'wp-i18n',
+            'wp-components',
+            'wp-block-editor',
+            'wp-element',
+            'wp-api-fetch',
+        ],
+        filemtime( plugin_dir_path( __FILE__ ) . 'build/editor/index.js' ),
+        true
+    );
+}
+add_action( 'init', 'bna_register_block_assets' );
+
 function bna_register_block() {
-    register_block_type( __DIR__ );
+    register_block_type( __DIR__, [
+        'render_callback' => 'BNA\bna_render_alerts_block',
+    ] );
 }
 add_action( 'init', 'bna_register_block' );
