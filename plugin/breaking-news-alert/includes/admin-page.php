@@ -1,22 +1,24 @@
 <?php
 
+namespace BNA;
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
 function bna_register_admin_page() {
     add_menu_page(
-        'Breaking News Alerts',     // Page title
-        'News Alerts',              // Menu title
-        'manage_options',           // Capability needed to see this menu
-        'bna-news-alerts',          // Menu slug (unique ID)
-        'bna_render_admin_page',    // Callback function to display the page
-        'dashicons-megaphone',      // Icon (WordPress dashicon)
-        20                          // Position in menu
+        'Breaking News Alerts',         // Page title
+        'News Alerts',                  // Menu title
+        'manage_options',               // Capability needed to see this menu
+        'bna-news-alerts',              // Menu slug (unique ID)
+        'BNA\bna_render_admin_page',    // Callback function to display the page
+        'dashicons-megaphone',          // Icon (WordPress dashicon)
+        20                              // Position in menu
     );
 }
 
-add_action( 'admin_menu', 'bna_register_admin_page' );
+add_action( 'admin_menu', 'BNA\bna_register_admin_page' );
 
 function bna_render_admin_page() {
     ?>
@@ -67,14 +69,31 @@ function bna_handle_form_submission( $sqsClient ) {
         check_admin_referer( 'bna_send_alert', 'bna_nonce' )
     ) {
         $message = sanitize_text_field( wp_unslash( $_POST['alert_message'] ) );
+        $alertType  = sanitize_text_field( wp_unslash( $_POST['alert_type'] ) );
+        $ttlSeconds = (int) $_POST['alert_expiration'] ?: null;
+
+        $priorityMap = [
+            'error'   => 1,
+            'warning' => 3,
+            'success' => 4,
+            'info'    => 5,
+        ];
+
+        $priority = $priorityMap[$alertType] ?? 5;
 
         $messageBody = json_encode([
             'message' => $message,
             'time'    => current_time( 'mysql' ),
+            'type'    => $alertType,
         ]);
 
+        $options = [
+            'type'       => $alertType,
+            'ttlSeconds' => $ttlSeconds,
+            'priority'   => $priority,
+        ];
 
-        $result = $sqsClient->sendMessage( $messageBody );
+        $result = $sqsClient->sendMessage( $messageBody, $options );
 
         set_transient( 'bna_admin_notice', [
             'message' => $result ? 'Alert sent successfully!' : 'Failed to send alert.',
@@ -99,4 +118,4 @@ function bna_admin_notices() {
         delete_transient( 'bna_admin_notice' );
     }
 }
-add_action( 'admin_notices', 'bna_admin_notices' );
+add_action( 'admin_notices', 'BNA\bna_admin_notices' );
