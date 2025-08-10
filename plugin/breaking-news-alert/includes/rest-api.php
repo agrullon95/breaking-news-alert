@@ -11,8 +11,6 @@ function bna_register_rest_routes(AlertQueueClient $sqsClient) {
             'callback' => function() use ($sqsClient) {
                 $messages = $sqsClient->getDecodedMessages(1);
 
-                error_log(print_r($messages, true));
-
                 $alerts = [];
                 foreach ($messages as $msg) {
                     $alerts[] = [
